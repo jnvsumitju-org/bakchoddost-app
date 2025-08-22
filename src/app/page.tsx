@@ -1,103 +1,67 @@
-import Image from "next/image";
+"use client";
+import useSWR from "swr";
+import { api } from "../lib/api";
+import Link from "next/link";
+import { Card, CardContent, CardHeader } from "../components/ui/Card";
+import Button from "../components/ui/Button";
 
 export default function Home() {
+  const { data: trending, isLoading, error } = useSWR("/trending", api.getTrending, { revalidateOnFocus: false });
   return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+    <div className="space-y-8">
+      <section className="text-center py-8">
+        <h1 className="text-3xl font-semibold tracking-tight">Personalized Dosti Poems</h1>
+        <p className="text-muted mt-2">Add your and your friends' names to generate fun Hindi/Hinglish shayari.</p>
+        <div className="mt-4">
+          <Link href="/start">
+            <Button size="lg">Start →</Button>
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        <p className="text-xs text-muted mt-2">Click Start to go through a simple 3-step flow: your name → friends → poem.</p>
+      </section>
+      <section>
+        <Card>
+          <CardHeader>
+            <h2 className="text-xl font-semibold">Trending Poems</h2>
+          </CardHeader>
+          <CardContent>
+            {isLoading && (
+              <div className="grid md:grid-cols-2 gap-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="rounded border border-border p-3 bg-card animate-pulse h-32" />
+                ))}
+              </div>
+            )}
+            {!isLoading && error && <p className="text-sm text-red-600">Failed to load trending poems</p>}
+            {!isLoading && !error && (
+              <>
+                {!trending || trending.length === 0 ? (
+                  <p className="text-sm text-muted">No poems yet. Add some in the Admin Dashboard.</p>
+                ) : (
+                  <div className="grid md:grid-cols-2 gap-4">
+                    {trending.map((p) => (
+                      <div key={p.id} className="rounded border border-border p-3 bg-card text-card-foreground shadow-sm">
+                        <div className="flex items-start gap-3">
+                          <div className="flex-1">
+                            <pre className="whitespace-pre-wrap text-sm leading-6">{p.text}</pre>
+                          </div>
+                          <div className="w-36 shrink-0 text-xs border-l pl-3">
+                            <div className="text-muted">Used</div>
+                            <div className="font-semibold mb-2">{(p as any).usageCount ?? 0} times</div>
+                            <Link href={`/start?use=${p.id}`}>
+                              <Button size="sm">Use →</Button>
+                            </Link>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
