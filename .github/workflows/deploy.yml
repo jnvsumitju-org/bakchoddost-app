@@ -7,6 +7,9 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
     permissions:
       id-token: write
       contents: read
@@ -30,7 +33,7 @@ jobs:
         run: npm run build
 
       - name: Static export
-        run: npx next export -o out
+        run: npx next export
 
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
