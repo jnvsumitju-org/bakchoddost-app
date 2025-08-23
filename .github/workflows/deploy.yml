@@ -39,7 +39,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ap-south-1
-          role-to-assume: arn:aws:iam::233110572042:role/github-actions
+          role-to-assume: arn:aws:iam::233110572042:role/github-actions-bakchoddost-app
 
       - name: Sync static assets (cached)
         run: aws s3 sync out "s3://$S3_BUCKET" --delete --cache-control max-age=31536000,public --exclude index.html --exclude "*.html"
