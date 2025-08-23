@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "../../../lib/api";
 import Button from "../../../components/ui/Button";
-import Input from "../../../components/ui/Input";
+// import Input from "../../../components/ui/Input";
 import Textarea from "../../../components/ui/Textarea";
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
 
@@ -21,8 +21,9 @@ export default function DashboardPage() {
     try {
       const data = await api.listPoems();
       setPoems(data);
-    } catch (e: any) {
-      setError(e.message || "Failed to load poems");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to load poems";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -40,8 +41,9 @@ export default function DashboardPage() {
       setText("");
       setInstructions("");
       await load();
-    } catch (e: any) {
-      setError(e.message || "Failed to create");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to create";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -53,8 +55,9 @@ export default function DashboardPage() {
     try {
       await api.updatePoem(id, { text: patch.text || "", instructions: patch.instructions });
       await load();
-    } catch (e: any) {
-      setError(e.message || "Failed to update");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to update";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -66,8 +69,9 @@ export default function DashboardPage() {
     try {
       await api.deletePoem(id);
       await load();
-    } catch (e: any) {
-      setError(e.message || "Failed to delete");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to delete";
+      setError(msg);
     } finally {
       setLoading(false);
     }
@@ -106,7 +110,7 @@ export default function DashboardPage() {
                     <Textarea className="h-56 font-mono text-base" defaultValue={p.text} onBlur={(e) => update(p._id, { text: e.target.value })} />
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
-                        <Link href={`/admin/poems/${p._id}`}>
+                        <Link href={`/admin/poems/edit?id=${p._id}`}>
                           <Button size="sm" variant="ghost">Update</Button>
                         </Link>
                         <button className="text-red-600" onClick={() => remove(p._id)}>

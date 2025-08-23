@@ -1,6 +1,6 @@
 "use client";
 import { useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, type FieldArrayPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "../../lib/api";
 import { generateSchema, type GenerateForm } from "../../lib/validation";
@@ -24,7 +24,10 @@ export default function StartPage() {
     defaultValues: { userName: "", friendNames: [""] },
     mode: "onBlur",
   });
-  const { fields, append, remove } = useFieldArray({ name: "friendNames", control });
+  const { fields, append, remove } = useFieldArray<GenerateForm, FieldArrayPath<GenerateForm>>({
+    name: "friendNames" as FieldArrayPath<GenerateForm>,
+    control,
+  });
 
   const onGenerate = handleSubmit(async (values) => {
     const friends = values.friendNames.filter((n) => n.trim().length > 0);

@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { api } from "../../../../lib/api";
 import Button from "../../../../components/ui/Button";
 import Input from "../../../../components/ui/Input";
@@ -13,8 +13,8 @@ import { poemSchema, type PoemForm } from "../../../../lib/validation";
 export default function EditPoemPage() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const poemId = params?.id as string;
+  const params = useSearchParams();
+  const poemId = params.get("id") || "";
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<PoemForm>({
     resolver: zodResolver(poemSchema),
     defaultValues: { text: "", instructions: "" },
@@ -25,12 +25,13 @@ export default function EditPoemPage() {
   const [friendCount, setFriendCount] = useState<number>(2);
 
   useEffect(() => {
+    if (!poemId) return;
     let mounted = true;
     api.getPoem(poemId).then((p) => {
       if (!mounted) return;
       setValue("text", p.text || "");
       setValue("instructions", p.instructions || "");
-    }).catch((e: any) => setError(e.message || "Failed to load"));
+    }).catch((e: unknown) => setError(e instanceof Error ? e.message : "Failed to load"));
     return () => { mounted = false; };
   }, [poemId, setValue]);
 
@@ -52,12 +53,16 @@ export default function EditPoemPage() {
   }
 
   const update = handleSubmit(async (values) => {
+    if (!poemId) {
+      setError("Missing id");
+      return;
+    }
     setError(null);
     try {
       await api.updatePoem(poemId, values);
       router.push("/admin/dashboard");
-    } catch (e: any) {
-      setError(e.message || "Failed to update");
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : "Failed to update");
     }
   });
 
@@ -86,7 +91,7 @@ export default function EditPoemPage() {
               <div className="rounded-md border p-3 bg-muted/10 text-sm">
                 <p className="mb-2"><strong>How to write templates:</strong></p>
                 <ul className="list-disc ml-5 space-y-1">
-                  <li>Use <code className="px-1 rounded bg-muted/30">{'{{userName}}'}</code> for the user's name.</li>
+                  <li>Use <code className="px-1 rounded bg-muted/30">{'{{userName}}'}</code> for the user&apos;s name.</li>
                   <li>Use <code className="px-1 rounded bg-muted/30">{'{{friendName1}}'}</code> .. <code className="px-1 rounded bg-muted/30">{`{{friendName${friendCount}}}`}</code> for friends.</li>
                 </ul>
               </div>

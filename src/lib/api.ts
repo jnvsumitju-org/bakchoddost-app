@@ -1,12 +1,13 @@
 export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-type HttpMethod = "GET" | "POST" | "PUT" | "DELETE";
+type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD";
 
 async function http<T>(path: string, options: RequestInit & { method?: HttpMethod } = {}): Promise<T> {
   const url = `${API_BASE_URL}${path}`;
+  const method = (options.method || "GET") as HttpMethod;
   const res = await fetch(url, {
-    method: options.method || "GET",
-    headers: options.method && options.method !== "GET" && options.method !== "HEAD"
+    method,
+    headers: method !== "GET" && method !== "HEAD"
       ? {
           "Content-Type": "application/json",
           ...(options.headers || {}),
@@ -27,7 +28,7 @@ async function http<T>(path: string, options: RequestInit & { method?: HttpMetho
 }
 
 export const api = {
-  getTrending: () => http<Array<{ id: string; text: string; instructions?: string }>>("/api/poems/trending"),
+  getTrending: () => http<Array<{ id: string; text: string; instructions?: string; usageCount?: number }>>("/api/poems/trending"),
   generatePoem: (payload: { userName: string; friendNames: string[] }) =>
     http<{ text: string; templateId: string }>("/api/poems/generate", {
       method: "POST",

@@ -11,7 +11,7 @@ export default function Home() {
     <div className="space-y-8">
       <section className="text-center py-8">
         <h1 className="text-3xl font-semibold tracking-tight">Personalized Dosti Poems</h1>
-        <p className="text-muted mt-2">Add your and your friends' names to generate fun Hindi/Hinglish shayari.</p>
+        <p className="text-muted mt-2">Add your and your friends&apos; names to generate fun Hindi/Hinglish shayari.</p>
         <div className="mt-4">
           <Link href="/start">
             <Button size="lg">Start →</Button>
@@ -47,7 +47,7 @@ export default function Home() {
                           </div>
                           <div className="w-36 shrink-0 text-xs border-l pl-3">
                             <div className="text-muted">Used</div>
-                            <div className="font-semibold mb-2">{(p as any).usageCount ?? 0} times</div>
+                            <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
                             <Link href={`/start?use=${p.id}`}>
                               <Button size="sm">Use →</Button>
                             </Link>

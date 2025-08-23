@@ -32,8 +32,9 @@ export default function LoginPage() {
     try {
       await api.login(values);
       router.push("/admin/dashboard");
-    } catch (e: any) {
-      setMessage(e.message || "Failed");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed";
+      setMessage(msg);
     }
   });
 

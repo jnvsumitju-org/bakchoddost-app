@@ -65,7 +65,7 @@ export default function PoemsPage() {
                         </div>
                         <div className="w-36 shrink-0 text-xs border-l pl-3">
                           <div className="text-muted">Used</div>
-                          <div className="font-semibold mb-2">{(p as any).usageCount ?? 0} times</div>
+                          <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
                           <a href={`/start?use=${p._id}`}>
                             <Button size="sm">Use →</Button>
                           </a>

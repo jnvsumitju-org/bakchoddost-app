@@ -1,10 +1,8 @@
-name: Deploy Frontend
+name: Deploy to S3 + CloudFront
 
 on:
   push:
     branches: [ main ]
-    paths:
-      - 'frontend/**'
 
 jobs:
   deploy:
@@ -12,35 +10,42 @@ jobs:
     defaults:
       run:
         working-directory: frontend
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+    permissions:
+      id-token: write
+      contents: read
 
-      - name: Setup Node
-        uses: actions/setup-node@v4
+    env:
+      S3_BUCKET: ${{ secrets.S3_BUCKET }}
+      CF_DISTRIBUTION_ID: ${{ secrets.CF_DISTRIBUTION_ID }}
+      NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
       - name: Install deps
         run: npm ci
 
       - name: Build
-        env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
-        run: npm run build && npx next export -o out
+        run: npm run build
+
+      - name: Static export
+        run: npx next export -o out
 
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+          aws-region: ap-south-1
+          role-to-assume: arn:aws:iam::233110572042:role/github-actions
 
-      - name: Sync to S3
-        run: aws s3 sync out s3://${{ secrets.S3_BUCKET }} --delete --cache-control max-age=31536000,public --exclude index.html --exclude "*.html"
+      - name: Sync static assets (cached)
+        run: aws s3 sync out "s3://$S3_BUCKET" --delete --cache-control max-age=31536000,public --exclude index.html --exclude "*.html"
 
-      - name: Upload HTML with no-cache
-        run: aws s3 sync out s3://${{ secrets.S3_BUCKET }} --exact-timestamps --cache-control no-cache --exclude "*" --include index.html --include "*.html"
+      - name: Upload HTML (no-cache)
+        run: aws s3 sync out "s3://$S3_BUCKET" --exact-timestamps --cache-control no-cache --exclude "*" --include index.html --include "*.html"
 
       - name: Invalidate CloudFront
-        run: aws cloudfront create-invalidation --distribution-id ${{ secrets.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/*"
+        run: aws cloudfront create-invalidation --distribution-id "$CF_DISTRIBUTION_ID" --paths "/*"

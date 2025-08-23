@@ -30,8 +30,9 @@ export default function RegisterPage() {
     try {
       await api.register(values);
       setMessage("Registered!");
-    } catch (e: any) {
-      setMessage(e.message || "Failed");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed";
+      setMessage(msg);
     }
   });
 

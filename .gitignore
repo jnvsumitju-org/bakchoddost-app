@@ -24,6 +24,7 @@ logs/
 coverage/
 dist/
 build/
+out/
 .out/
 .tmp/
 .temp/

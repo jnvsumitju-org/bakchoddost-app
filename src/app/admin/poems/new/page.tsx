@@ -27,8 +27,9 @@ export default function NewPoemPage() {
     try {
       await api.createPoem(values);
       router.push("/admin/dashboard");
-    } catch (e: any) {
-      setError(e.message || "Failed to create");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to create";
+      setError(msg);
     }
   });
 
@@ -94,7 +95,7 @@ export default function NewPoemPage() {
               <div className="rounded-md border p-3 bg-muted/10 text-sm">
                 <p className="mb-2"><strong>How to write templates:</strong></p>
                 <ul className="list-disc ml-5 space-y-1">
-                  <li>Use <code className="px-1 rounded bg-muted/30">{'{{userName}}'}</code> for the user's name.</li>
+                  <li>Use <code className="px-1 rounded bg-muted/30">{'{{userName}}'}</code> for the user&apos;s name.</li>
                   <li>Use <code className="px-1 rounded bg-muted/30">{'{{friendName1}}'}</code> .. <code className="px-1 rounded bg-muted/30">{`{{friendName${friendCount}}}`}</code> for friends.</li>
                 </ul>
               </div>
