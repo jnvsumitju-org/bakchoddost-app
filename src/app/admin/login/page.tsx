@@ -39,8 +39,8 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="grid place-items-center w-full min-w-2xl h-screen">
-      <Card className="w-full">
+    <div className="grid place-items-center w-full h-screen px-4">
+      <Card className="w-full max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
         <CardHeader>
           <h1 className="text-xl font-semibold">Admin Login</h1>
         </CardHeader>
