@@ -18,7 +18,10 @@ export const metadata: Metadata = {
   title: "bakchoddost",
   description: "Generate fun Hindi/Hinglish poems for friends",
   icons: {
-    icon: "/logo.svg",
+    icon: [
+      { url: "/favicon.ico" },
+      { url: "/logo.svg", type: "image/svg+xml" },
+    ],
   },
 };
 

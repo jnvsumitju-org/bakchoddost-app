@@ -78,7 +78,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 w-full min-w-5xl h-screen">
+    <div className="space-y-6 w-full h-screen md:min-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Admin Dashboard</h1>
       </div>
@@ -97,7 +97,7 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent>
             {loading && (
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-4">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="rounded border border-border p-3 bg-card animate-pulse h-40" />
                 ))}
