@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
+import { ToastProvider } from "../components/ui/Toast";
 import Link from "next/link";
 
 const geistSans = Geist({
@@ -35,8 +36,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
-        <NavBar />
-        <main className="flex-1 mx-auto max-w-6xl px-4 py-6">{children}</main>
+        <ToastProvider>
+          <NavBar />
+          <main className="flex-1 mx-auto max-w-6xl px-4 py-6">{children}</main>
+        </ToastProvider>
         <footer className="border-t border-gray-200">
           <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-gray-600 flex items-center justify-between">
             <span>© {new Date().getFullYear()} bakchoddost</span>

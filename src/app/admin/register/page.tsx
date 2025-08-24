@@ -6,15 +6,37 @@ import { api } from "../../../lib/api";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
-import { authSchema, type AuthForm } from "../../../lib/validation";
+import { z } from "zod";
+import { useToast } from "../../../components/ui/Toast";
+
+const phoneSchema = z.object({
+  code: z.string().regex(/^\+\d{1,4}$/i, "Invalid code"),
+  phone: z.string().regex(/^[0-9]{6,15}$/i, "Enter digits only (6-15)"),
+});
+const profileSchema = z.object({ name: z.string().min(1), username: z.string().min(3) });
 
 export default function RegisterPage() {
   const [message, setMessage] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthForm>({
-    resolver: zodResolver(authSchema),
-    defaultValues: { email: "", password: "" },
+  const [step, setStep] = useState<"phone" | "otp" | "profile">("phone");
+  const [phone, setPhone] = useState("");
+  const { register: regPhone, handleSubmit: submitPhone, formState: { errors: phoneErrors, isSubmitting: starting } } = useForm<{ code: string; phone: string }>({
+    resolver: zodResolver(phoneSchema),
+    defaultValues: { code: "+91", phone: "" },
     mode: "onBlur",
   });
+  const { register: regOtp, handleSubmit: submitOtp, formState: { errors: otpErrors, isSubmitting: confirming } } = useForm<{ code: string }>({
+    resolver: zodResolver(z.object({ code: z.string().min(4) })),
+    defaultValues: { code: "" },
+    mode: "onBlur",
+  });
+  const { register: regProfile, handleSubmit: submitProfile, watch, formState: { errors: profileErrors, isSubmitting: profiling } } = useForm<{ name: string; username: string }>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: { name: "", username: "" },
+    mode: "onChange",
+  });
+  const username = watch("username");
+  const [available, setAvailable] = useState<boolean | null>(null);
+  const { show } = useToast();
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
@@ -25,32 +47,106 @@ export default function RegisterPage() {
     return () => { mounted = false; };
   }, []);
 
-  const submit = handleSubmit(async (values) => {
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      if (username && username.length >= 3) {
+        try {
+          const res = await api.usernameAvailable(username);
+          setAvailable(res.available);
+        } catch {
+          setAvailable(null);
+        }
+      } else {
+        setAvailable(null);
+      }
+    }, 400);
+    return () => clearTimeout(t);
+  }, [username]);
+
+  const start = submitPhone(async (values) => {
     setMessage(null);
     try {
-      await api.register(values);
+      const full = `${values.code}${values.phone}`;
+      await api.otpStart({ phone: full });
+      setPhone(full);
+      setStep("otp");
+      show("OTP sent", "success");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to start";
+      setMessage(msg);
+      show(msg, "error");
+    }
+  });
+
+  const confirm = submitOtp(async (values) => {
+    setMessage(null);
+    try {
+      await api.otpConfirm({ phone, code: values.code });
+      setStep("profile");
+      show("Phone verified", "success");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to confirm";
+      setMessage(msg);
+      show(msg, "error");
+    }
+  });
+
+  const saveProfile = submitProfile(async (values) => {
+    setMessage(null);
+    try {
+      await api.registerProfile(values);
       setMessage("Registered!");
+      show("Profile saved", "success");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed";
       setMessage(msg);
+      show(msg, "error");
     }
   });
 
   return (
-    <div className="grid place-items-center">
-      <Card className="w-full max-w-lg">
+    <div className="grid place-items-center px-4">
+      <Card className="w-full max-w-md md:max-w-lg">
         <CardHeader>
           <h1 className="text-xl font-semibold">Admin Register</h1>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="space-y-3">
-            <Input placeholder="Email" type="email" error={errors.email?.message} {...register("email")} />
-            <Input placeholder="Password" type="password" error={errors.password?.message} {...register("password")} />
-            <Button disabled={!!errors.email || !!errors.password} loading={isSubmitting} type="submit">
-              Register
-            </Button>
-            {message && <p className="text-sm text-red-600">{message}</p>}
-          </form>
+          {step === "phone" && (
+            <form onSubmit={start} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <select className="border rounded-md px-3 py-2 bg-background text-foreground border-border" {...regPhone("code")} defaultValue={"+91"}>
+                  <option value="+91">+91 (IN)</option>
+                  <option value="+1">+1 (US)</option>
+                  <option value="+44">+44 (UK)</option>
+                  <option value="+61">+61 (AU)</option>
+                  <option value="+81">+81 (JP)</option>
+                </select>
+                <Input className="flex-1" placeholder="Phone (digits only)" type="tel" error={phoneErrors.phone?.message || phoneErrors.code?.message} {...regPhone("phone")} />
+              </div>
+              <Button loading={starting} type="submit">Send OTP</Button>
+            </form>
+          )}
+          {step === "otp" && (
+            <form onSubmit={confirm} className="space-y-3">
+              <Input placeholder="Enter OTP" type="tel" error={otpErrors.code?.message} {...regOtp("code")} />
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" type="button" onClick={() => setStep("phone")}>Back</Button>
+                <Button loading={confirming} type="submit">Verify OTP</Button>
+              </div>
+            </form>
+          )}
+          {step === "profile" && (
+            <form onSubmit={saveProfile} className="space-y-3">
+              <Input placeholder="Full name" error={profileErrors.name?.message} {...regProfile("name")} />
+              <div>
+                <Input placeholder="Username" error={profileErrors.username?.message} {...regProfile("username")} />
+                {available === true && <p className="text-xs text-green-600">Username available</p>}
+                {available === false && <p className="text-xs text-red-600">Username taken</p>}
+              </div>
+              <Button loading={profiling} type="submit">Save profile</Button>
+            </form>
+          )}
+          {message && <p className="text-sm text-red-600 mt-2">{message}</p>}
         </CardContent>
       </Card>
     </div>

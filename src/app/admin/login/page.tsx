@@ -7,16 +7,31 @@ import { useRouter } from "next/navigation";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
-import { authSchema, type AuthForm } from "../../../lib/validation";
+import { z } from "zod";
+import { useToast } from "../../../components/ui/Toast";
+
+const phoneSchema = z.object({
+  code: z.string().regex(/^\+\d{1,4}$/i, "Invalid code"),
+  phone: z.string().regex(/^[0-9]{6,15}$/i, "Enter digits only (6-15)"),
+});
+const otpSchema = z.object({ code: z.string().min(4) });
 
 export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
+  const { show } = useToast();
   const router = useRouter();
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<AuthForm>({
-    resolver: zodResolver(authSchema),
-    defaultValues: { email: "", password: "" },
+  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const { register: regPhone, handleSubmit: submitPhone, formState: { errors: phoneErrors, isSubmitting: starting } } = useForm<{ code: string; phone: string}>({
+    resolver: zodResolver(phoneSchema),
+    defaultValues: { code: "+91", phone: "" },
     mode: "onBlur",
   });
+  const { register: regOtp, handleSubmit: submitOtp, formState: { errors: otpErrors, isSubmitting: confirming } } = useForm<{ code: string}>({
+    resolver: zodResolver(otpSchema),
+    defaultValues: { code: "" },
+    mode: "onBlur",
+  });
+  const [phone, setPhone] = useState("");
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
@@ -27,14 +42,30 @@ export default function LoginPage() {
     return () => { mounted = false; };
   }, [router]);
 
-  const submit = handleSubmit(async (values) => {
+  const start = submitPhone(async (values) => {
     setMessage(null);
     try {
-      await api.login(values);
+      const full = `${values.code}${values.phone}`;
+      await api.otpStart({ phone: full });
+      setPhone(full);
+      setStep("otp");
+      show("OTP sent", "success");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to start";
+      setMessage(msg);
+      show(msg, "error");
+    }
+  });
+  const confirm = submitOtp(async (values) => {
+    setMessage(null);
+    try {
+      await api.otpConfirm({ phone, code: values.code });
+      show("Logged in", "success");
       router.push("/admin/dashboard");
     } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed";
+      const msg = e instanceof Error ? e.message : "Failed to confirm";
       setMessage(msg);
+      show(msg, "error");
     }
   });
 
@@ -45,14 +76,32 @@ export default function LoginPage() {
           <h1 className="text-xl font-semibold">Admin Login</h1>
         </CardHeader>
         <CardContent>
-          <form onSubmit={submit} className="space-y-3">
-            <Input placeholder="Email" type="email" error={errors.email?.message} {...register("email")} />
-            <Input placeholder="Password" type="password" error={errors.password?.message} {...register("password")} />
-            <Button disabled={!!errors.email || !!errors.password} loading={isSubmitting} type="submit">
-              Login
-            </Button>
-            {message && <p className="text-sm text-red-600">{message}</p>}
-          </form>
+          {step === "phone" && (
+            <form onSubmit={start} className="space-y-3">
+              <div className="flex items-center gap-2">
+                <select className="border rounded-md px-3 py-2 bg-background text-foreground border-border" {...regPhone("code")} defaultValue={"+91"}>
+                  <option value="+91">+91 (IN)</option>
+                  <option value="+1">+1 (US)</option>
+                  <option value="+44">+44 (UK)</option>
+                  <option value="+61">+61 (AU)</option>
+                  <option value="+81">+81 (JP)</option>
+                </select>
+                <Input className="flex-1" placeholder="Phone (digits only)" type="tel" error={phoneErrors.phone?.message || phoneErrors.code?.message} {...regPhone("phone")} />
+              </div>
+              <Button loading={starting} type="submit">Send OTP</Button>
+              {message && <p className="text-sm text-red-600">{message}</p>}
+            </form>
+          )}
+          {step === "otp" && (
+            <form onSubmit={confirm} className="space-y-3">
+              <Input placeholder="Enter OTP" type="tel" error={otpErrors.code?.message} {...regOtp("code")} />
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" type="button" onClick={() => setStep("phone")}>Back</Button>
+                <Button loading={confirming} type="submit">Verify & Login</Button>
+              </div>
+              {message && <p className="text-sm text-red-600">{message}</p>}
+            </form>
+          )}
         </CardContent>
       </Card>
     </div>
