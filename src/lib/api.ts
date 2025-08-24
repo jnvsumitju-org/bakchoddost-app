@@ -27,6 +27,8 @@ async function http<T>(path: string, options: RequestInit & { method?: HttpMetho
   return undefined;
 }
 
+// ROUTES
+
 export const api = {
   getTrending: () => http<Array<{ id: string; text: string; instructions?: string; usageCount?: number }>>("/api/poems/trending"),
   generatePoem: (payload: { userName: string; friendNames: string[] }) =>
