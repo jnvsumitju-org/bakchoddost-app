@@ -6,6 +6,7 @@ import { api } from "../../../lib/api";
 import { useRouter } from "next/navigation";
 import Button from "../../../components/ui/Button";
 import Input from "../../../components/ui/Input";
+import CountryCodeSelect from "../../../components/ui/CountryCodeSelect";
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
 import { z } from "zod";
 import { useToast } from "../../../components/ui/Toast";
@@ -80,13 +81,7 @@ export default function LoginPage() {
           {step === "phone" && (
             <form onSubmit={start} className="space-y-3">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                <select className="border rounded-md px-3 py-2 bg-background text-foreground border-border" {...regPhone("code")} defaultValue={"+91"}>
-                  <option value="+91">+91 (IN)</option>
-                  <option value="+1">+1 (US)</option>
-                  <option value="+44">+44 (UK)</option>
-                  <option value="+61">+61 (AU)</option>
-                  <option value="+81">+81 (JP)</option>
-                </select>
+                <CountryCodeSelect {...regPhone("code")} defaultValue={"+91"} />
                 <Input className="flex-1" placeholder="Phone (digits only)" type="tel" error={phoneErrors.phone?.message || phoneErrors.code?.message} {...regPhone("phone")} />
               </div>
               <Button loading={starting} type="submit">Send OTP</Button>
