@@ -67,8 +67,8 @@ export default function EditPoemPage() {
   });
 
   return (
-    <div className="grid place-items-center">
-      <Card className="w-full min-w-5xl relative">
+    <div className="grid place-items-center px-4 py-6">
+      <Card className="w-full max-w-6xl relative">
         <CardHeader>
           <h1 className="text-xl font-semibold">Update poem</h1>
         </CardHeader>

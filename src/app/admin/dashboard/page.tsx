@@ -78,7 +78,7 @@ export default function DashboardPage() {
   };
 
   return (
-    <div className="space-y-6 w-full h-screen md:min-w-5xl">
+    <div className="space-y-6 w-full md:min-w-5xl">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold">Admin Dashboard</h1>
       </div>

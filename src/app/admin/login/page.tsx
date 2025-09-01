@@ -71,7 +71,7 @@ export default function LoginPage() {
   });
 
   return (
-    <div className="grid place-items-center w-full h-screen px-4">
+    <div className="grid place-items-center w-full min-h-[70vh] px-4 py-8">
       <Card className="w-full max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
         <CardHeader>
           <h1 className="text-xl font-semibold">Admin Login</h1>
@@ -79,7 +79,7 @@ export default function LoginPage() {
         <CardContent>
           {step === "phone" && (
             <form onSubmit={start} className="space-y-3">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <select className="border rounded-md px-3 py-2 bg-background text-foreground border-border" {...regPhone("code")} defaultValue={"+91"}>
                   <option value="+91">+91 (IN)</option>
                   <option value="+1">+1 (US)</option>

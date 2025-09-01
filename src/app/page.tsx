@@ -10,8 +10,8 @@ export default function Home() {
   return (
     <div className="space-y-8">
       <section className="text-center py-8">
-        <h1 className="text-3xl font-semibold tracking-tight">Personalized Dosti Poems</h1>
-        <p className="text-muted mt-2">Add your and your friends&apos; names to generate fun Hindi/Hinglish shayari.</p>
+        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Personalized Dosti Poems</h1>
+        <p className="text-sm sm:text-base text-muted mt-2">Add your and your friends&apos; names to generate fun Hindi/Hinglish shayari.</p>
         <div className="mt-4">
           <Link href="/start">
             <Button size="lg">Start →</Button>
@@ -38,14 +38,14 @@ export default function Home() {
                 {!trending || trending.length === 0 ? (
                   <p className="text-sm text-muted">No poems yet. Add some in the Admin Dashboard.</p>
                 ) : (
-                  <div className="grid md:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {trending.map((p) => (
                       <div key={p.id} className="rounded border border-border p-3 bg-card text-card-foreground shadow-sm">
-                        <div className="flex items-start gap-3">
-                          <div className="flex-1">
+                        <div className="flex flex-col md:flex-row items-stretch md:items-start gap-3">
+                          <div className="flex-1 order-2 md:order-1">
                             <pre className="whitespace-pre-wrap text-sm leading-6">{p.text}</pre>
                           </div>
-                          <div className="w-36 shrink-0 text-xs border-l pl-3">
+                          <div className="w-full md:w-36 shrink-0 text-xs md:border-l md:pl-3 order-1 md:order-2">
                             <div className="text-muted">Used</div>
                             <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
                             <Link href={`/start?use=${p.id}`}>

@@ -38,7 +38,9 @@ export default function StartPage() {
 
   return (
     <div className="space-y-6">
-      <Stepper steps={["Your Name", "Friends", "Poem"]} active={step} />
+      <div className="overflow-x-auto">
+        <Stepper steps={["Your Name", "Friends", "Poem"]} active={step} />
+      </div>
 
       {step === 1 && (
         <Card>
@@ -69,7 +71,7 @@ export default function StartPage() {
           <CardContent>
             <div className="space-y-3">
               {fields.map((field, idx) => (
-                <div key={field.id} className="flex items-center gap-2">
+                <div key={field.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input placeholder={`Friend #${idx + 1}`}
                     error={errors.friendNames?.[idx]?.message}
                     {...register(`friendNames.${idx}` as const)}
@@ -86,7 +88,7 @@ export default function StartPage() {
                   )}
                 </div>
               ))}
-              <div className="flex justify-between">
+              <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
                 <Button variant="ghost" size="sm" onClick={() => append("") }>
                   + Add friend
                 </Button>
@@ -114,7 +116,7 @@ export default function StartPage() {
           </CardHeader>
           <CardContent>
             <pre className="whitespace-pre-wrap leading-7">{result}</pre>
-            <div className="mt-4 flex gap-2">
+            <div className="mt-4 flex flex-wrap gap-2">
               <Button variant="ghost" onClick={() => setStep(2)}>
                 Back
               </Button>

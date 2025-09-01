@@ -28,10 +28,12 @@ export default function TemplatesPage() {
           <h1 className="text-xl font-semibold">Browse Templates</h1>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Input placeholder="Search text..." value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
-            {isDebouncing && <span className="text-xs text-muted animate-pulse">Searching…</span>}
-            <Button variant="ghost" onClick={() => { setQ(""); setPage(1); }}>Clear</Button>
+            <div className="flex items-center gap-2">
+              {isDebouncing && <span className="text-xs text-muted animate-pulse">Searching…</span>}
+              <Button variant="ghost" onClick={() => { setQ(""); setPage(1); }}>Clear</Button>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -42,7 +44,7 @@ export default function TemplatesPage() {
         </CardHeader>
         <CardContent>
           {(isLoading || isDebouncing) && (
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded border border-border p-3 bg-card animate-pulse h-28" />
               ))}
@@ -54,14 +56,14 @@ export default function TemplatesPage() {
               {items.length === 0 ? (
                 <p className="text-sm text-muted">No templates found.</p>
               ) : (
-                <div className="grid md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {items.map((p) => (
                     <div key={p._id} className="rounded border border-border p-3 bg-card text-card-foreground shadow-sm">
-                      <div className="flex items-start gap-3">
-                        <div className="flex-1">
+                      <div className="flex flex-col md:flex-row items-stretch md:items-start gap-3">
+                        <div className="flex-1 order-2 md:order-1">
                           <pre className="whitespace-pre-wrap text-sm leading-6">{p.text}</pre>
                         </div>
-                        <div className="w-36 shrink-0 text-xs border-l pl-3">
+                        <div className="w-full md:w-36 shrink-0 text-xs md:border-l md:pl-3 order-1 md:order-2">
                           <div className="text-muted">Used</div>
                           <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
                           <a href={`/start?use=${p._id}`}>
