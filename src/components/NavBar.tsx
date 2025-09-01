@@ -11,6 +11,14 @@ export default function NavBar() {
   const pathname = usePathname();
   useEffect(() => {
     let mounted = true;
+    // Avoid calling on public pages where Admin link is the only difference
+    const shouldCheck = pathname?.startsWith("/admin");
+    if (!shouldCheck) {
+      setIsAuthed(false);
+      return () => {
+        mounted = false;
+      };
+    }
     api
       .me()
       .then(() => mounted && setIsAuthed(true))

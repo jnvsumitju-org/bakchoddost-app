@@ -11,9 +11,7 @@ type Poem = { _id: string; text: string; instructions?: string };
 
 export default function DashboardPage() {
   const [poems, setPoems] = useState<Poem[]>([]);
-  const [text, setText] = useState("Hey {{userName}}, tere yaar {{friendName1}} ke saath masti!\nDosti ki dhun, hasi ki barsaat, yaariyaan non-stop!");
-  const [instructions, setInstructions] = useState("Use placeholders like {{userName}} and {{friendName1}}");
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const load = async () => {
@@ -32,22 +30,6 @@ export default function DashboardPage() {
   useEffect(() => {
     load();
   }, []);
-
-  const create = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      await api.createPoem({ text, instructions });
-      setText("");
-      setInstructions("");
-      await load();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to create";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const update = async (id: string, patch: Partial<Poem>) => {
     setLoading(true);

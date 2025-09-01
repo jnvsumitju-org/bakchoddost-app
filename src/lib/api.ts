@@ -1,4 +1,5 @@
-export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+import { FE_ENV } from "./env";
+export const API_BASE_URL = FE_ENV.API_BASE_URL;
 
 type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "HEAD";
 
@@ -15,6 +16,7 @@ async function http<T>(path: string, options: RequestInit & { method?: HttpMetho
       : options.headers,
     body: options.body,
     credentials: "include",
+    // Avoid caching authenticated requests by default
     cache: "no-store",
   });
   if (!res.ok) {

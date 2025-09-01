@@ -51,24 +51,7 @@ export default function NewPoemPage() {
     });
   }
 
-  function handleInsertFriend() {
-    // Insert first missing friend placeholder up to friendCount
-    const existing = (textRef.current?.value || "").match(/\{\{friendName(\d+)\}\}/g) || [];
-    const used = new Set<number>(
-      existing
-        .map((s) => /\{\{friendName(\d+)\}\}/.exec(s))
-        .filter(Boolean)
-        .map((m) => parseInt((m as RegExpExecArray)[1], 10))
-    );
-    let toUse = 1;
-    for (let i = 1; i <= friendCount; i += 1) {
-      if (!used.has(i)) {
-        toUse = i;
-        break;
-      }
-    }
-    insertAtCursor(`{{friendName${toUse}}}`);
-  }
+  // helper removed (unused)
 
   return (
     <div className="grid place-items-center px-4 py-6">
