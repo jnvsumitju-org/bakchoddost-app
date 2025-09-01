@@ -51,6 +51,7 @@ export default function LoginPage() {
       setStep("otp");
       show("OTP sent", "success");
     } catch (e: unknown) {
+      console.error(e);
       const msg = e instanceof Error ? e.message : "Failed to start";
       setMessage(msg);
       show(msg, "error");
