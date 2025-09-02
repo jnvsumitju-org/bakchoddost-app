@@ -75,7 +75,10 @@ export default function LoginPage() {
     <div className="grid place-items-center w-full min-h-[70vh] px-4 py-8">
       <Card className="w-full max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl">
         <CardHeader>
-          <h1 className="text-xl font-semibold">Admin Login</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Login</h1>
+            <a href="/admin/register" className="text-sm hover:underline">Need an account? Register</a>
+          </div>
         </CardHeader>
         <CardContent>
           {step === "phone" && (

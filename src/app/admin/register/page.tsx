@@ -109,7 +109,10 @@ export default function RegisterPage() {
     <div className="grid place-items-center px-4 py-8">
       <Card className="w-full max-w-md md:max-w-lg">
         <CardHeader>
-          <h1 className="text-xl font-semibold">Admin Register</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-semibold">Register</h1>
+            <a href="/admin/login" className="text-sm hover:underline">Already have an account? Login</a>
+          </div>
         </CardHeader>
         <CardContent>
           {step === "phone" && (

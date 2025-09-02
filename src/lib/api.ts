@@ -32,7 +32,10 @@ async function http<T>(path: string, options: RequestInit & { method?: HttpMetho
 // ROUTES
 
 export const api = {
-  getTrending: () => http<Array<{ id: string; text: string; instructions?: string; usageCount?: number }>>("/api/poems/trending"),
+  getTrending: () =>
+    http<Array<{ id: string; text: string; instructions?: string; usageCount?: number; ownerUsername?: string }>>(
+      "/api/poems/trending"
+    ),
   generatePoem: (payload: { userName: string; friendNames: string[] }) =>
     http<{ text: string; templateId: string }>("/api/poems/generate", {
       method: "POST",
@@ -71,7 +74,13 @@ export const api = {
     if (params.page) query.set("page", String(params.page));
     if (params.limit) query.set("limit", String(params.limit));
     const qs = query.toString();
-    return http<{ items: Array<{ _id: string; text: string; instructions?: string }>; page: number; limit: number; total: number; pages: number }>(`/api/poems/browse${qs ? `?${qs}` : ""}`);
+    return http<{
+      items: Array<{ _id: string; text: string; instructions?: string; usageCount?: number; ownerUsername?: string }>;
+      page: number;
+      limit: number;
+      total: number;
+      pages: number;
+    }>(`/api/poems/browse${qs ? `?${qs}` : ""}`);
   },
 };
 

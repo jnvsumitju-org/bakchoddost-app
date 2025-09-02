@@ -48,6 +48,9 @@ export default function Home() {
                           <div className="w-full md:w-36 shrink-0 text-xs md:border-l md:pl-3 order-1 md:order-2">
                             <div className="text-muted">Used</div>
                             <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
+                            {((p as { ownerUsername?: string }).ownerUsername) && (
+                              <div className="mb-2"><span className="text-muted">By</span> <span className="font-medium">@{(p as { ownerUsername?: string }).ownerUsername}</span></div>
+                            )}
                             <Link href={`/start?use=${p.id}`}>
                               <Button size="sm">Use →</Button>
                             </Link>
