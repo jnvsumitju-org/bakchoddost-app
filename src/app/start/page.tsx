@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useFieldArray, type FieldArrayPath } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { api } from "../../lib/api";
@@ -28,6 +28,33 @@ export default function StartPage() {
     name: "friendNames" as FieldArrayPath<GenerateForm>,
     control,
   });
+  const friendNames = watch("friendNames") || [];
+  const friendsCount = friendNames.filter((n) => (n || "").trim().length > 0).length;
+  const [fitCount, setFitCount] = useState<number | null>(null);
+  const [fitStats, setFitStats] = useState<Array<{ friends: number; count: number }> | null>(null);
+
+  // Live fit count with small debounce
+  useEffect(() => {
+    const t = setTimeout(async () => {
+      try {
+        const res = await api.fitCount(friendsCount);
+        setFitCount(res.count);
+      } catch {
+        setFitCount(null);
+      }
+    }, 300);
+    return () => clearTimeout(t);
+  }, [friendsCount]);
+
+  useEffect(() => {
+    let mounted = true;
+    api.fitStats()
+      .then((r) => mounted && setFitStats(r.items))
+      .catch(() => mounted && setFitStats(null));
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const onGenerate = handleSubmit(async (values) => {
     const friends = values.friendNames.filter((n) => n.trim().length > 0);
@@ -53,6 +80,18 @@ export default function StartPage() {
                 error={errors.userName?.message}
                 {...register("userName")}
               />
+              {fitStats && (
+                <div className="text-xs text-muted">
+                  <div className="font-medium mb-1">Templates by friends count:</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+                    {fitStats.map((s) => (
+                      <div key={s.friends} className="border rounded px-2 py-1 bg-muted/10">
+                        <span className="text-muted">{s.friends} friends:</span> <span className="font-semibold">{s.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div className="text-right">
                 <Button disabled={!!errors.userName || !watch("userName")?.trim()} onClick={() => setStep(2)}>
                   Next
@@ -96,11 +135,27 @@ export default function StartPage() {
                   <Button variant="ghost" onClick={() => setStep(1)}>
                     Back
                   </Button>
-                  <Button disabled={!!errors.friendNames} onClick={onGenerate} loading={isSubmitting}>
-                    Generate Poem
+                  <Button
+                    disabled={!!errors.friendNames || (fitCount !== null && fitCount === 0)}
+                    onClick={onGenerate}
+                    loading={isSubmitting}
+                  >
+                    {fitCount !== null ? `Generate (${fitCount} fits)` : "Generate Poem"}
                   </Button>
                 </div>
               </div>
+              {fitStats && (
+                <div className="text-xs text-muted">
+                  <div className="font-medium mb-1">Templates by friends count:</div>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-1">
+                    {fitStats.map((s) => (
+                      <div key={s.friends} className="border rounded px-2 py-1 bg-muted/10">
+                        <span className="text-muted">{s.friends} friends:</span> <span className="font-semibold">{s.count}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               {errors.friendNames && typeof errors.friendNames?.message === "string" && (
                 <p className="text-red-600 text-sm">{errors.friendNames.message}</p>
               )}

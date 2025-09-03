@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import NavBar from "../components/NavBar";
 import { ToastProvider } from "../components/ui/Toast";
-import Link from "next/link";
+import FooterLinks from "../components/FooterLinks";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -42,10 +42,7 @@ export default function RootLayout({
         <footer className="border-t border-gray-200">
           <div className="mx-auto max-w-5xl px-4 py-6 text-sm text-gray-600 flex items-center justify-between">
             <span>© 2025 bakchoddost.com</span>
-            <div className="flex gap-4">
-              <Link href="/about" className="hover:underline">About</Link>
-              <Link href="/admin/login" className="hover:underline">Admin</Link>
-            </div>
+            <FooterLinks />
           </div>
         </footer>
       </body>

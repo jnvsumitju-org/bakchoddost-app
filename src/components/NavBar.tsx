@@ -6,19 +6,17 @@ import { usePathname } from "next/navigation";
 import { api } from "../lib/api";
 
 export default function NavBar() {
-  const [isAuthed, setIsAuthed] = useState(false);
+  const [isAuthed, setIsAuthed] = useState<null | boolean>(null);
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   useEffect(() => {
     let mounted = true;
-    // Avoid calling on public pages where Admin link is the only difference
-    const shouldCheck = pathname?.startsWith("/admin");
-    if (!shouldCheck) {
-      setIsAuthed(false);
-      return () => {
-        mounted = false;
-      };
-    }
+    // Optimistic client-side check to avoid flash
+    try {
+      const raw = typeof document !== "undefined" ? document.cookie || "" : "";
+      if (raw.includes("token=")) setIsAuthed(true);
+    } catch {}
+    // Confirm with API
     api
       .me()
       .then(() => mounted && setIsAuthed(true))
@@ -42,7 +40,7 @@ export default function NavBar() {
           <Link href="/poems" className="px-2 py-1 rounded hover:bg-muted/10">Poems</Link>
           <Link href="/templates" className="px-2 py-1 rounded hover:bg-muted/10">Templates</Link>
           <Link href="/about" className="px-2 py-1 rounded hover:bg-muted/10">About</Link>
-          {isAuthed ? (
+          {isAuthed === true ? (
             <button
               className="px-2 py-1 rounded hover:bg-muted/10"
               onClick={() => {
@@ -54,10 +52,10 @@ export default function NavBar() {
             >
               Logout
             </button>
-          ) : (
+          ) : isAuthed === false ? (
             <Link href="/admin/login" className="px-2 py-1 rounded hover:bg-muted/10">Admin</Link>
-          )}
-          {isAuthed && (
+          ) : null}
+          {isAuthed === true && (
             <Link href="/admin/dashboard" className="px-2 py-1 rounded hover:bg-muted/10">Dashboard</Link>
           )}
         </div>

@@ -1,59 +1,42 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useSWR from "swr";
 import { api } from "../../lib/api";
 import { renderTemplate } from "../../lib/poem";
-import Input from "../../components/ui/Input";
 import Button from "../../components/ui/Button";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 
 export default function PoemsPage() {
-  const [q, setQ] = useState("");
-  const [debouncedQ, setDebouncedQ] = useState("");
   const [page, setPage] = useState(1);
   const limit = 10;
-  useEffect(() => {
-    const t = setTimeout(() => setDebouncedQ(q), 1000);
-    return () => clearTimeout(t);
-  }, [q]);
-  const key = useMemo(() => ["/poems", debouncedQ, page, limit].join("|"), [debouncedQ, page]);
-  const { data, isLoading, error } = useSWR(key, () => api.browsePoems({ q: debouncedQ, page, limit }), { revalidateOnFocus: false });
-  const isDebouncing = q !== debouncedQ;
+  const key = useMemo(() => ["/poems", page, limit].join("|"), [page]);
+  const { data, isLoading, error } = useSWR(key, () => api.browsePoems({ page, limit }), { revalidateOnFocus: false });
 
   const items = data?.items || [];
   const pages = data?.pages || 0;
+  const windowPages = (current: number, total: number) => {
+    const span = 3;
+    const start = Math.max(1, current - span);
+    const end = Math.min(total, current + span);
+    return Array.from({ length: end - start + 1 }, (_v, i) => start + i);
+  };
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <h1 className="text-xl font-semibold">Browse Poems</h1>
+          <h2 className="font-medium">All Poems</h2>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-            <Input placeholder="Search text..." value={q} onChange={(e) => { setPage(1); setQ(e.target.value); }} />
-            <div className="flex items-center gap-2">
-              {isDebouncing && <span className="text-xs text-muted animate-pulse">Searching…</span>}
-              <Button variant="ghost" onClick={() => { setQ(""); setPage(1); }}>Clear</Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <h2 className="font-medium">Results</h2>
-        </CardHeader>
-        <CardContent>
-          {(isLoading || isDebouncing) && (
+          {isLoading && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="rounded border border-border p-3 bg-card animate-pulse h-28" />
               ))}
             </div>
           )}
-          {!isLoading && !isDebouncing && error && <p className="text-sm text-red-600">Failed to load</p>}
-          {!isLoading && !isDebouncing && !error && (
+          {!isLoading && error && <p className="text-sm text-red-600">Failed to load</p>}
+          {!isLoading && !error && (
             <>
               {items.length === 0 ? (
                 <p className="text-sm text-muted">No poems found.</p>
@@ -69,7 +52,12 @@ export default function PoemsPage() {
                           <div className="text-muted">Used</div>
                           <div className="font-semibold mb-2">{(p as { usageCount?: number }).usageCount ?? 0} times</div>
                           {((p as { ownerUsername?: string }).ownerUsername) && (
-                            <div className="mb-2"><span className="text-muted">By</span> <span className="font-medium">@{(p as { ownerUsername?: string }).ownerUsername}</span></div>
+                            <div className="mb-2">
+                              <span className="text-muted">By</span>{" "}
+                              <a href={`/u/${(p as { ownerUsername?: string }).ownerUsername}`} className="font-medium hover:underline">
+                                @{(p as { ownerUsername?: string }).ownerUsername}
+                              </a>
+                            </div>
                           )}
                           <a href={`/start?use=${p._id}`}>
                             <Button size="sm">Use →</Button>
@@ -81,9 +69,18 @@ export default function PoemsPage() {
                 </div>
               )}
               {pages > 1 && (
-                <div className="mt-4 flex items-center justify-center gap-2">
+                <div className="mt-4 flex items-center justify-center gap-1 flex-wrap">
                   <Button size="sm" variant="ghost" disabled={page <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>Prev</Button>
-                  <span className="text-sm">Page {page} of {pages}</span>
+                  {windowPages(page, pages).map((n) => (
+                    <Button
+                      key={n}
+                      size="sm"
+                      variant={n === page ? "default" : "ghost"}
+                      onClick={() => setPage(n)}
+                    >
+                      {n}
+                    </Button>
+                  ))}
                   <Button size="sm" variant="ghost" disabled={page >= pages} onClick={() => setPage((p) => Math.min(pages, p + 1))}>Next</Button>
                 </div>
               )}

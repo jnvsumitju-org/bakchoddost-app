@@ -8,7 +8,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [status, setStatus] = useState<"checking" | "ok" | "nope">("checking");
 
-  const isPublicAdminRoute = pathname === "/admin/login" || pathname === "/admin/register";
+  const isPublicAdminRoute = pathname === "/admin/login";
 
   useEffect(() => {
     let mounted = true;

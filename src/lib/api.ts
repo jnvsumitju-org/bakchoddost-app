@@ -54,13 +54,16 @@ export const api = {
   otpStart: (payload: { phone: string }) =>
     http<{ ok: boolean }>("/api/auth/otp/start", { method: "POST", body: JSON.stringify(payload) }),
   otpConfirm: (payload: { phone: string; code: string }) =>
-    http<{ id: string; phone: string }>("/api/auth/otp/confirm", { method: "POST", body: JSON.stringify(payload) }),
+    http<{ id: string; phone: string; username?: string; name?: string; profileComplete?: boolean }>(
+      "/api/auth/otp/confirm",
+      { method: "POST", body: JSON.stringify(payload) }
+    ),
   usernameAvailable: (username: string) =>
     http<{ available: boolean }>(`/api/auth/username-available?username=${encodeURIComponent(username)}`),
   registerProfile: (payload: { firstName: string; lastName?: string }) =>
     http<{ ok: boolean; username: string; name: string }>("/api/auth/register-profile", { method: "POST", body: JSON.stringify(payload) }),
   logout: () => http<{ message: string }>("/api/auth/logout", { method: "POST" }),
-  me: () => http<{ id: string; email: string }>("/api/auth/me"),
+  me: () => http<{ id: string; email?: string; phone?: string; username?: string; name?: string }>("/api/auth/me"),
   listPoems: () => http<Array<{ _id: string; text: string; instructions?: string }>>("/api/poems"),
   getPoem: (id: string) => http<{ _id: string; text: string; instructions?: string }>(`/api/poems/${id}`),
   createPoem: (payload: { text: string; instructions?: string }) =>
@@ -82,6 +85,8 @@ export const api = {
       pages: number;
     }>(`/api/poems/browse${qs ? `?${qs}` : ""}`);
   },
+  fitCount: (friends: number) => http<{ count: number }>(`/api/poems/fit-count?friends=${friends}`),
+  fitStats: () => http<{ items: Array<{ friends: number; count: number }> }>(`/api/poems/fit-stats`),
 };
 
 

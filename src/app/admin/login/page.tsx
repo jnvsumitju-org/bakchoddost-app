@@ -16,12 +16,16 @@ const phoneSchema = z.object({
   phone: z.string().regex(/^[0-9]{6,15}$/i, "Enter digits only (6-15)"),
 });
 const otpSchema = z.object({ code: z.string().min(4) });
+const profileSchema = z.object({ firstName: z.string().min(1), lastName: z.string().optional() });
 
 export default function LoginPage() {
   const [message, setMessage] = useState<string | null>(null);
   const { show } = useToast();
   const router = useRouter();
-  const [step, setStep] = useState<"phone" | "otp">("phone");
+  const [step, setStep] = useState<"phone" | "otp" | "profile">("phone");
+  const [expiresAt, setExpiresAt] = useState<number | null>(null);
+  const [resendAvailableAt, setResendAvailableAt] = useState<number | null>(null);
+  const [, setTick] = useState(0);
   const { register: regPhone, handleSubmit: submitPhone, formState: { errors: phoneErrors, isSubmitting: starting } } = useForm<{ code: string; phone: string}>({
     resolver: zodResolver(phoneSchema),
     defaultValues: { code: "+91", phone: "" },
@@ -32,7 +36,22 @@ export default function LoginPage() {
     defaultValues: { code: "" },
     mode: "onBlur",
   });
+  const { register: regProfile, handleSubmit: submitProfile, formState: { errors: profileErrors, isSubmitting: profiling } } = useForm<{ firstName: string; lastName?: string}>({
+    resolver: zodResolver(profileSchema),
+    defaultValues: { firstName: "", lastName: "" },
+    mode: "onChange",
+  });
+  const [assignedUsername, setAssignedUsername] = useState<string | null>(null);
   const [phone, setPhone] = useState("");
+
+  // 1s ticker to update countdowns
+  useEffect(() => {
+    const t = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+
+  const secondsLeft = expiresAt ? Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000)) : 0;
+  const resendLeft = resendAvailableAt ? Math.max(0, Math.ceil((resendAvailableAt - Date.now()) / 1000)) : 0;
 
   // If already logged in, redirect to dashboard
   useEffect(() => {
@@ -50,6 +69,9 @@ export default function LoginPage() {
       await api.otpStart({ phone: full });
       setPhone(full);
       setStep("otp");
+      const now = Date.now();
+      setExpiresAt(now + 60 * 1000); // 60s expiry
+      setResendAvailableAt(now + 45 * 1000); // allow resend after 45s
       show("OTP sent", "success");
     } catch (e: unknown) {
       console.error(e);
@@ -61,11 +83,50 @@ export default function LoginPage() {
   const confirm = submitOtp(async (values) => {
     setMessage(null);
     try {
-      await api.otpConfirm({ phone, code: values.code });
-      show("Logged in", "success");
-      router.push("/admin/dashboard");
+      if (expiresAt && Date.now() > expiresAt) {
+        setMessage("OTP expired. Please resend.");
+        show("OTP expired. Please resend.", "error");
+        return;
+      }
+      const res = await api.otpConfirm({ phone, code: values.code });
+      if (res.profileComplete) {
+        show("Logged in", "success");
+        router.replace("/admin/dashboard");
+      } else {
+        setStep("profile");
+        show("Phone verified, complete your profile", "success");
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to confirm";
+      setMessage(msg);
+      show(msg, "error");
+    }
+  });
+
+  const resend = async () => {
+    try {
+      if (resendLeft > 0) return;
+      await api.otpStart({ phone });
+      const now = Date.now();
+      setExpiresAt(now + 60 * 1000);
+      setResendAvailableAt(now + 45 * 1000);
+      show("OTP resent", "success");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to resend";
+      setMessage(msg);
+      show(msg, "error");
+    }
+  };
+
+  const saveProfile = submitProfile(async (values) => {
+    setMessage(null);
+    try {
+      const res = await api.registerProfile(values);
+      setAssignedUsername(res.username);
+      show("Profile saved", "success");
+      router.replace("/admin/dashboard");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to save profile";
       setMessage(msg);
       show(msg, "error");
     }
@@ -77,7 +138,6 @@ export default function LoginPage() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-semibold">Login</h1>
-            <a href="/admin/register" className="text-sm hover:underline">Need an account? Register</a>
           </div>
         </CardHeader>
         <CardContent>
@@ -94,9 +154,25 @@ export default function LoginPage() {
           {step === "otp" && (
             <form onSubmit={confirm} className="space-y-3">
               <Input placeholder="Enter OTP" type="tel" error={otpErrors.code?.message} {...regOtp("code")} />
+              <div className="text-xs text-muted">{secondsLeft > 0 ? `Code expires in ${secondsLeft}s` : "Code expired"}</div>
               <div className="flex items-center gap-2">
                 <Button variant="ghost" type="button" onClick={() => setStep("phone")}>Back</Button>
                 <Button loading={confirming} type="submit">Verify & Login</Button>
+                <Button type="button" variant="ghost" disabled={resendLeft > 0} onClick={resend}>
+                  {resendLeft > 0 ? `Resend in ${resendLeft}s` : "Resend OTP"}
+                </Button>
+              </div>
+              {message && <p className="text-sm text-red-600">{message}</p>}
+            </form>
+          )}
+          {step === "profile" && (
+            <form onSubmit={saveProfile} className="space-y-3">
+              <Input placeholder="First name" error={profileErrors.firstName?.message} {...regProfile("firstName")} />
+              <Input placeholder="Last name (optional)" error={profileErrors.lastName?.message} {...regProfile("lastName")} />
+              {assignedUsername && <p className="text-xs text-muted">Assigned username: <span className="font-semibold">@{assignedUsername}</span></p>}
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" type="button" onClick={() => setStep("otp")}>Back</Button>
+                <Button loading={profiling} type="submit">Save profile</Button>
               </div>
               {message && <p className="text-sm text-red-600">{message}</p>}
             </form>
