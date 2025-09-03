@@ -143,8 +143,10 @@ export default function StartPage() {
                 </p>
               )}
               {fields.map((field, idx) => (
-                <div key={field.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
-                  <Input placeholder={`Friend #${idx + 1}`}
+                <div key={field.id} className="flex items-center gap-2">
+                  <Input
+                    containerClassName="flex-1"
+                    placeholder={`Friend #${idx + 1}`}
                     error={errors.friendNames?.[idx]?.message}
                     {...register(`friendNames.${idx}` as const)}
                   />
@@ -160,22 +162,21 @@ export default function StartPage() {
                   )}
                 </div>
               ))}
-              <div className="flex flex-col sm:flex-row sm:justify-between gap-2">
-                <Button variant="ghost" size="sm" onClick={() => append("") }>
+              <div className="flex items-center gap-2 justify-end flex-nowrap">
+                <Button variant="ghost" size="sm" className="shrink-0" onClick={() => append("")}>
                   + Add friend
                 </Button>
-                <div className="flex items-center gap-2">
-                  <Button variant="ghost" onClick={() => setStep(1)}>
-                    Back
-                  </Button>
-                  <Button
-                    disabled={!!errors.friendNames || (fitCount !== null && fitCount === 0)}
-                    onClick={onGenerate}
-                    loading={isSubmitting}
-                  >
-                    {fitCount !== null ? `Generate (${fitCount} fits)` : "Generate Poem"}
-                  </Button>
-                </div>
+                <Button variant="ghost" size="sm" className="shrink-0" onClick={() => setStep(1)}>
+                  Back
+                </Button>
+                <Button
+                  className="shrink-0"
+                  disabled={!!errors.friendNames || (fitCount !== null && fitCount === 0)}
+                  onClick={onGenerate}
+                  loading={isSubmitting}
+                >
+                  {fitCount !== null ? `Generate (${fitCount} fits)` : "Generate Poem"}
+                </Button>
               </div>
               {fitStats && (
                 <div className="text-xs text-muted">
