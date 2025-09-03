@@ -11,7 +11,7 @@ export default function Home() {
     <div className="space-y-8">
       <section className="text-center py-8">
         <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Personalized Dosti Poems</h1>
-        <p className="text-sm sm:text-base text-muted mt-2">Add your and your friends&apos; names to generate fun Hindi/Hinglish shayari.</p>
+        <p className="text-sm sm:text-base text-muted mt-2">Add your and your friends&apos; names to generate fun shayari.</p>
         <div className="mt-4">
           <Link href="/start">
             <Button size="lg">Start →</Button>
