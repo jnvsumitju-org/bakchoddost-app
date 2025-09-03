@@ -53,7 +53,7 @@ export default function NavBar() {
               Logout
             </button>
           ) : isAuthed === false ? (
-            <Link href="/admin/login" className="px-2 py-1 rounded hover:bg-muted/10">Admin</Link>
+            <Link href="/admin/login" className="px-2 py-1 rounded hover:bg-muted/10">Login</Link>
           ) : null}
           {isAuthed === true && (
             <Link href="/admin/dashboard" className="px-2 py-1 rounded hover:bg-muted/10">Dashboard</Link>

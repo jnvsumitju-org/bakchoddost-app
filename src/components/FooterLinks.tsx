@@ -49,7 +49,7 @@ export default function FooterLinks() {
           </button>
         </>
       ) : (
-        <Link href="/admin/login" className="hover:underline">Admin</Link>
+        <Link href="/admin/login" className="hover:underline">Login</Link>
       )}
     </div>
   );

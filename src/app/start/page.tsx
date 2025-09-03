@@ -11,12 +11,14 @@ import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 
 export default function StartPage() {
   const [step, setStep] = useState<1 | 2 | 3>(1);
+  const [isAuthed, setIsAuthed] = useState<boolean | null>(null);
   const [result, setResult] = useState<string | null>(null);
 
   const {
     register,
     control,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
     watch,
   } = useForm<GenerateForm>({
@@ -56,6 +58,24 @@ export default function StartPage() {
     };
   }, []);
 
+  // Check session to skip name step and prefill name
+  useEffect(() => {
+    let mounted = true;
+    api
+      .me()
+      .then((me) => {
+        if (!mounted) return;
+        setIsAuthed(true);
+        const preset = (me?.name || me?.username || "").trim();
+        if (preset) setValue("userName", preset, { shouldValidate: true, shouldDirty: false });
+        setStep(2);
+      })
+      .catch(() => setIsAuthed(false));
+    return () => {
+      mounted = false;
+    };
+  }, [setValue]);
+
   const onGenerate = handleSubmit(async (values) => {
     const friends = values.friendNames.filter((n) => n.trim().length > 0);
     const data = await api.generatePoem({ userName: values.userName, friendNames: friends });
@@ -66,10 +86,14 @@ export default function StartPage() {
   return (
     <div className="space-y-6">
       <div className="overflow-x-auto">
-        <Stepper steps={["Your Name", "Friends", "Poem"]} active={step} />
+        {isAuthed ? (
+          <Stepper steps={["Friends", "Poem"]} active={step === 2 ? 1 : 2} />
+        ) : (
+          <Stepper steps={["Your Name", "Friends", "Poem"]} active={step} />
+        )}
       </div>
 
-      {step === 1 && (
+      {!isAuthed && step === 1 && (
         <Card>
           <CardHeader>
             <h2 className="text-xl font-semibold">Step 1: Enter Your Name</h2>

@@ -7,6 +7,7 @@ import Button from "../components/ui/Button";
 
 export default function Home() {
   const { data: trending, isLoading, error } = useSWR("/trending", api.getTrending, { revalidateOnFocus: false });
+  const { data: me } = useSWR("/me", api.me, { revalidateOnFocus: false });
   return (
     <div className="space-y-8">
       <section className="text-center py-8">
@@ -17,7 +18,13 @@ export default function Home() {
             <Button size="lg">Start →</Button>
           </Link>
         </div>
-        <p className="text-xs text-muted mt-2">Click Start to go through a simple 3-step flow: your name → friends → poem.</p>
+        <p className="mt-2 inline-block rounded bg-muted/20 px-2 py-1 text-[11px] sm:text-xs text-muted">
+          {me ? "Click Start to go through a simple 2-step flow: friends → poem." : "Click Start to go through a simple 3-step flow: your name → friends → poem."}
+        </p>
+        <p className="mt-2 inline-block rounded border border-amber-200 bg-amber-50 px-2 py-1 text-[11px] sm:text-xs text-amber-800">
+          Apni shayari talent ko spotlight do! Register karke apni poems submit karo — agar dhamakedaar hui to trending mein jayegi.
+          <Link href="/admin/login" className="ml-1 font-semibold underline decoration-amber-400 hover:decoration-amber-600">Register / Login →</Link>
+        </p>
       </section>
       <section>
         <Card>
