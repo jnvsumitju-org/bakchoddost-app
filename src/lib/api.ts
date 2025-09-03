@@ -57,8 +57,8 @@ export const api = {
     http<{ id: string; phone: string }>("/api/auth/otp/confirm", { method: "POST", body: JSON.stringify(payload) }),
   usernameAvailable: (username: string) =>
     http<{ available: boolean }>(`/api/auth/username-available?username=${encodeURIComponent(username)}`),
-  registerProfile: (payload: { username: string; name: string }) =>
-    http<{ ok: boolean }>("/api/auth/register-profile", { method: "POST", body: JSON.stringify(payload) }),
+  registerProfile: (payload: { firstName: string; lastName?: string }) =>
+    http<{ ok: boolean; username: string; name: string }>("/api/auth/register-profile", { method: "POST", body: JSON.stringify(payload) }),
   logout: () => http<{ message: string }>("/api/auth/logout", { method: "POST" }),
   me: () => http<{ id: string; email: string }>("/api/auth/me"),
   listPoems: () => http<Array<{ _id: string; text: string; instructions?: string }>>("/api/poems"),

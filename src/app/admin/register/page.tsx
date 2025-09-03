@@ -14,7 +14,7 @@ const phoneSchema = z.object({
   code: z.string().regex(/^\+\d{1,4}$/i, "Invalid code"),
   phone: z.string().regex(/^[0-9]{6,15}$/i, "Enter digits only (6-15)"),
 });
-const profileSchema = z.object({ name: z.string().min(1), username: z.string().min(3) });
+const profileSchema = z.object({ firstName: z.string().min(1), lastName: z.string().optional() });
 
 export default function RegisterPage() {
   const [message, setMessage] = useState<string | null>(null);
@@ -30,13 +30,14 @@ export default function RegisterPage() {
     defaultValues: { code: "" },
     mode: "onBlur",
   });
-  const { register: regProfile, handleSubmit: submitProfile, watch, formState: { errors: profileErrors, isSubmitting: profiling } } = useForm<{ name: string; username: string }>({
+  const { register: regProfile, handleSubmit: submitProfile, watch, formState: { errors: profileErrors, isSubmitting: profiling } } = useForm<{ firstName: string; lastName?: string }>({
     resolver: zodResolver(profileSchema),
-    defaultValues: { name: "", username: "" },
+    defaultValues: { firstName: "", lastName: "" },
     mode: "onChange",
   });
-  const username = watch("username");
-  const [available, setAvailable] = useState<boolean | null>(null);
+  const firstName = watch("firstName");
+  const lastName = watch("lastName");
+  const [assignedUsername, setAssignedUsername] = useState<string | null>(null);
   const { show } = useToast();
 
   // If already logged in, redirect to dashboard
@@ -49,20 +50,8 @@ export default function RegisterPage() {
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(async () => {
-      if (username && username.length >= 3) {
-        try {
-          const res = await api.usernameAvailable(username);
-          setAvailable(res.available);
-        } catch {
-          setAvailable(null);
-        }
-      } else {
-        setAvailable(null);
-      }
-    }, 400);
-    return () => clearTimeout(t);
-  }, [username]);
+    setAssignedUsername(null);
+  }, [firstName, lastName]);
 
   const start = submitPhone(async (values) => {
     setMessage(null);
@@ -95,8 +84,9 @@ export default function RegisterPage() {
   const saveProfile = submitProfile(async (values) => {
     setMessage(null);
     try {
-      await api.registerProfile(values);
-      setMessage("Registered!");
+      const res = await api.registerProfile(values);
+      setAssignedUsername(res.username);
+      setMessage(`Registered as @${res.username}`);
       show("Profile saved", "success");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed";
@@ -135,12 +125,9 @@ export default function RegisterPage() {
           )}
           {step === "profile" && (
             <form onSubmit={saveProfile} className="space-y-3">
-              <Input placeholder="Full name" error={profileErrors.name?.message} {...regProfile("name")} />
-              <div>
-                <Input placeholder="Username" error={profileErrors.username?.message} {...regProfile("username")} />
-                {available === true && <p className="text-xs text-green-600">Username available</p>}
-                {available === false && <p className="text-xs text-red-600">Username taken</p>}
-              </div>
+              <Input placeholder="First name" error={profileErrors.firstName?.message} {...regProfile("firstName")} />
+              <Input placeholder="Last name (optional)" error={profileErrors.lastName?.message} {...regProfile("lastName")} />
+              {assignedUsername && <p className="text-xs text-muted">Assigned username: <span className="font-semibold">@{assignedUsername}</span></p>}
               <Button loading={profiling} type="submit">Save profile</Button>
             </form>
           )}
