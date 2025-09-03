@@ -145,7 +145,7 @@ export default function LoginPage() {
             <form onSubmit={start} className="space-y-3">
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                 <CountryCodeSelect {...regPhone("code")} defaultValue={"+91"} />
-                <Input className="flex-1" placeholder="Phone (digits only)" type="tel" error={phoneErrors.phone?.message || phoneErrors.code?.message} {...regPhone("phone")} />
+                <Input className="flex-1" placeholder="Phone Number" type="tel" error={phoneErrors.phone?.message || phoneErrors.code?.message} {...regPhone("phone")} />
               </div>
               <Button loading={starting} type="submit">Send OTP</Button>
               {message && <p className="text-sm text-red-600">{message}</p>}
