@@ -46,6 +46,14 @@ export default function DashboardPage() {
   };
 
   const remove = async (id: string) => {
+    const poem = poems.find((x) => x._id === id) as (Poem & { usageCount?: number }) | undefined;
+    const used = poem?.usageCount ?? 0;
+    const ok = window.confirm(
+      used > 0
+        ? `Are you sure you want to delete this poem?\n\nIt has been used ${used} time${used === 1 ? "" : "s"} and enjoyed by your users.\n\nThis cannot be undone.`
+        : "Are you sure you want to delete this poem? This cannot be undone."
+    );
+    if (!ok) return;
     setLoading(true);
     setError(null);
     try {
@@ -99,6 +107,9 @@ export default function DashboardPage() {
                           Delete
                         </button>
                       </div>
+                      {typeof (p as any).usageCount === "number" && (
+                        <div className="text-xs text-muted">Used {(p as any).usageCount} time{((p as any).usageCount === 1 ? "" : "s")}</div>
+                      )}
                     </div>
                   </div>
                 ))}
