@@ -97,7 +97,9 @@ export default function DashboardPage() {
               <div className="space-y-3">
                 {poems.map((p) => (
                   <div key={p._id} className="border rounded p-3 space-y-2">
-                    <Textarea className="h-56 font-mono text-base" defaultValue={p.text} onBlur={(e) => update(p._id, { text: e.target.value })} />
+                    <div className="text-sm whitespace-pre-wrap max-h-40 overflow-hidden">
+                      {p.text}
+                    </div>
                     <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center gap-2">
                         <Link href={`/admin/poems/edit?id=${p._id}`}>

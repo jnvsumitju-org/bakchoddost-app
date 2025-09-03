@@ -133,6 +133,15 @@ export default function StartPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
+              {friendsCount === 0 ? (
+                <p className="text-xs text-muted">
+                  Tip: Add your friends’ names—each one will appear in the poem. If you don’t add any, default friend placeholders will be used.
+                </p>
+              ) : (
+                <p className="text-xs text-muted">
+                  Great! {friendsCount} friend{friendsCount === 1 ? "" : "s"} added. They’ll be woven into your poem.
+                </p>
+              )}
               {fields.map((field, idx) => (
                 <div key={field.id} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                   <Input placeholder={`Friend #${idx + 1}`}
