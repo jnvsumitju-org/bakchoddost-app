@@ -1,12 +1,12 @@
 "use client";
 import { useSearchParams, useRouter } from "next/navigation";
 import useSWR from "swr";
-import { useEffect } from "react";
-import { api } from "../../lib/api";
+import { useEffect, Suspense } from "react";
+import { api, API_BASE_URL } from "../../lib/api";
 import { Card, CardContent, CardHeader } from "../../components/ui/Card";
 
 async function fetchUserPoems(username: string) {
-  const res = await fetch(`${api.API_BASE_URL}/api/poems/by/${encodeURIComponent(username)}`, {
+  const res = await fetch(`${API_BASE_URL}/api/poems/by/${encodeURIComponent(username)}`, {
     credentials: "include",
     cache: "no-store",
   });
@@ -14,7 +14,7 @@ async function fetchUserPoems(username: string) {
   return res.json();
 }
 
-export default function UserPage() {
+function UserPage() {
   const search = useSearchParams();
   const router = useRouter();
   const username = (search.get("name") || "").trim();
@@ -65,6 +65,14 @@ export default function UserPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={<div className="text-sm text-muted">Loading…</div>}>
+      <UserPage />
+    </Suspense>
   );
 }
 

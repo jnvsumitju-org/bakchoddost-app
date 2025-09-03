@@ -4,10 +4,10 @@ import Link from "next/link";
 import { api } from "../../../lib/api";
 import Button from "../../../components/ui/Button";
 // import Input from "../../../components/ui/Input";
-import Textarea from "../../../components/ui/Textarea";
+// Removed unused Textarea import
 import { Card, CardContent, CardHeader } from "../../../components/ui/Card";
 
-type Poem = { _id: string; text: string; instructions?: string };
+type Poem = { _id: string; text: string; instructions?: string; usageCount?: number };
 
 export default function DashboardPage() {
   const [poems, setPoems] = useState<Poem[]>([]);
@@ -31,22 +31,10 @@ export default function DashboardPage() {
     load();
   }, []);
 
-  const update = async (id: string, patch: Partial<Poem>) => {
-    setLoading(true);
-    setError(null);
-    try {
-      await api.updatePoem(id, { text: patch.text || "", instructions: patch.instructions });
-      await load();
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : "Failed to update";
-      setError(msg);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Removed unused update helper; edits happen on the edit page
 
   const remove = async (id: string) => {
-    const poem = poems.find((x) => x._id === id) as (Poem & { usageCount?: number }) | undefined;
+    const poem = poems.find((x) => x._id === id);
     const used = poem?.usageCount ?? 0;
     const ok = window.confirm(
       used > 0
@@ -109,8 +97,8 @@ export default function DashboardPage() {
                           Delete
                         </button>
                       </div>
-                      {typeof (p as any).usageCount === "number" && (
-                        <div className="text-xs text-muted">Used {(p as any).usageCount} time{((p as any).usageCount === 1 ? "" : "s")}</div>
+                      {typeof p.usageCount === "number" && (
+                        <div className="text-xs text-muted">Used {p.usageCount} time{(p.usageCount === 1 ? "" : "s")}</div>
                       )}
                     </div>
                   </div>

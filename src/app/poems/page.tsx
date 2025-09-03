@@ -75,7 +75,7 @@ export default function PoemsPage() {
                     <Button
                       key={n}
                       size="sm"
-                      variant={n === page ? "default" : "ghost"}
+                      variant={n === page ? "secondary" : "ghost"}
                       onClick={() => setPage(n)}
                     >
                       {n}
