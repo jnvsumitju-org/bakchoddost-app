@@ -47,9 +47,6 @@ export const metadata: Metadata = {
     "majedaar",
     "banaye",
   ],
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     url: FE_ENV.SITE_URL,
