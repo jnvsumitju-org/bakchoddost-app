@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "Learn what Bakchoddost is and how it works.",
+};
+
 export default function AboutPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-8">

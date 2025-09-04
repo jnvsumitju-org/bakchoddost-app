@@ -4,6 +4,7 @@ import "./globals.css";
 import NavBar from "../components/NavBar";
 import { ToastProvider } from "../components/ui/Toast";
 import FooterLinks from "../components/FooterLinks";
+import { FE_ENV } from "../lib/env";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,8 +17,46 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "bakchoddost",
-  description: "Generate fun Hindi/Hinglish poems for friends",
+  metadataBase: new URL(FE_ENV.SITE_URL),
+  title: {
+    default: "Bakchoddost — Personalized Dosti Poems",
+    template: "%s | Bakchoddost",
+  },
+  description:
+    "Generate fun Hindi/Hinglish poems for friends. Create personalized shayari with your friends' names.",
+  keywords: [
+    "shayari",
+    "poems",
+    "friends",
+    "hinglish",
+    "hindi",
+    "dosti",
+    "generator",
+    "bakchoddost",
+  ],
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: FE_ENV.SITE_URL,
+    title: "Bakchoddost — Personalized Dosti Poems",
+    description: "Generate fun Hindi/Hinglish poems for friends.",
+    siteName: "Bakchoddost",
+    images: [
+      { url: "/logo.svg" },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Bakchoddost — Personalized Dosti Poems",
+    description: "Generate fun Hindi/Hinglish poems for friends.",
+    images: ["/logo.svg"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
   icons: {
     icon: [
       { url: "/logo.svg", type: "image/svg+xml" },
